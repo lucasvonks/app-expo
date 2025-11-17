@@ -1,18 +1,39 @@
 import React from 'react'
 import {  Dimensions, StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { Button, ProgressBar } from 'react-native-paper';
+import {useNavigation} from '@react-navigation/native';
 
 import Container from '../components/Container';
 import Header from '../components/Header';
 import Body from '../components/Body';
 import Footer from '../components/Footer'
 
+
+
 const Despesas = () => {
+
+  const despesas = [
+    { nome: 'Contas', atual: 1100, total: 1100, cor: '#E53935' },
+    { nome: 'Comida', atual: 190, total: 400, cor: '#FB8C00' },
+    { nome: 'Entretenimento', atual: 210, total: 300, cor: '#410287' },
+    { nome: 'Transporte', atual: 150, total: 400, cor: '#74FF73' },
+  ];
+
+  const totalGasto = despesas.reduce((acc, item) => acc + item.atual, 0);
+  const totalDisponivel = despesas.reduce((acc, item) => acc + item.total, 0);
+  const saldoRestante = totalDisponivel - totalGasto;
+
+  
+
+  const navigation = useNavigation();
   const handleGerenciarPress = () => {
     // aqui da pode navegar pra tela de gerenciamento
     // exemplo: navigation.navigate('GerenciarOrcamentos');
     console.log('Gerenciar clicado!');
   };
+
+  const formatarMoeda = (valor) =>
+    'R$' + valor.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
   return(
 <Container>
@@ -24,60 +45,44 @@ const Despesas = () => {
             flex: 1,
             alignItems: 'center',
             justifyContent: 'flex-start',
-            marginTop: 40,
+            marginTop: 1,
           }}>
           <Text style={styles.title}> Gráfico de Despesas </Text>
-          <Text style={styles.subtitle}> R$1650,00/R$2200,00 </Text>
+          <Text style={styles.subtitle}> {formatarMoeda(totalGasto)} / {formatarMoeda(totalDisponivel)}</Text>
 
           {/* Container dos gráficos */}
           <View style={styles.chartContainer}>
-            <View style={styles.expenseBlock}>
-              <Text style={styles.chartText}>Contas </Text>
-              <ProgressBar
-                progress={0.5}
-                color="#E53935"
-                style={styles.progressBar}
-              />
-              <Text style={styles.valueText}>R$1100/R$1100</Text>
-            </View>
-
-            <View style={styles.expenseBlock}>
-              <Text style={styles.chartText}>Comida</Text>
-              <ProgressBar
-                progress={0.4}
-                color="#FB8C00"
-                style={styles.progressBar}
-              />
-              <Text style={styles.valueText}>R$190 / R$400</Text>
-            </View>
-
-            <View style={styles.expenseBlock}>
-              <Text style={styles.chartText}>Entretenimento</Text>
-              <ProgressBar
-                progress={0.6}
-                color="#410287"
-                style={styles.progressBar}
-              />
-              <Text style={styles.valueText}>R$210 / R$300</Text>
-            </View>
-
-            <View style={styles.expenseBlock}>
-              <Text style={styles.chartText}>Transporte</Text>
-              <ProgressBar
-                progress={0.3}
-                color="#74FF73"
-                style={styles.progressBar}
-              />
-              <Text style={styles.valueText}>R$150 / R$400</Text>
-            </View>
+            {despesas.map((item, index) => {
+              const progresso = item.total > 0 ? item.atual / item.total : 0;
+              return (
+                <View key={index} style={styles.expenseBlock}>
+                  <Text style={styles.chartText}>{item.nome}</Text>
+                  <ProgressBar
+                    progress={progresso}
+                    color={item.cor}
+                    style={styles.progressBar}
+                  />
+                  <Text style={styles.valueText}>
+                    {formatarMoeda(item.atual)} / {formatarMoeda(item.total)}
+                  </Text>
+                </View>
+              );
+            })}
 
             <View style={styles.saldoRow}>
-              <Text style={styles.subtitle}>Saldo Restante: R$550,00</Text>
+              <Text style={styles.subtitle}>Saldo Restante: {formatarMoeda(saldoRestante)}</Text>
               <TouchableOpacity onPress={handleGerenciarPress}>
                 <Text style={styles.gerenciarText}>Gerenciar</Text>
               </TouchableOpacity>
             </View>
           </View>
+          <Button mode="contained"
+          style={{
+            backgroundColor: '#48BF91',
+            marginTop: 10,
+          }} onPress={() => navigation.navigate('CadastroDespesa')}>
+    + Adicionar Despesa
+  </Button>
         </View>
 
         <Footer />
